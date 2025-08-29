@@ -1,71 +1,109 @@
+
 'use client';
-
-import { GroupSuggestions } from "@/components/dashboard/GroupSuggestions";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { Users, ArrowRight } from "lucide-react";
-import { useAuth } from "@/hooks/use-auth";
-
-// In a real app, this data would be fetched from Firestore
-const userGroups = [
-    { id: '1', name: 'Calculus Crew', subject: 'Math 101', memberCount: 5 },
-    { id: '2', name: 'Physics Phantoms', subject: 'Physics 202', memberCount: 3 },
-];
+import { DashboardClient } from '@/components/dashboard-client';
+import { suggestGroups } from '@/ai/flows/ai-smart-matching';
+import type { Group, User } from '@/lib/types';
+import { useAuth } from '@/hooks/use-auth';
+import { useEffect, useState, useCallback } from 'react';
+import { getGroups } from '@/lib/firebase-service';
+import { OnboardingModal } from '@/components/onboarding-modal';
 
 export default function DashboardPage() {
-    const { user } = useAuth();
-    
-    return (
-        <div className="grid gap-8">
-            <div>
-                <h1 className="text-3xl font-bold font-headline">Welcome back, {user?.name}!</h1>
-                <p className="text-muted-foreground">Here's what's happening in your StudyVerse.</p>
-            </div>
+  const { user, loading: authLoading } = useAuth();
+  const [allGroups, setAllGroups] = useState<Group[]>([]);
+  const [recommendedGroups, setRecommendedGroups] = useState<Group[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Your Groups</CardTitle>
-                    <CardDescription>The study groups you are currently a part of.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {userGroups.length > 0 ? (
-                        <div className="grid gap-4 md:grid-cols-2">
-                            {userGroups.map((group) => (
-                                <Card key={group.id} className="flex flex-col">
-                                    <CardHeader>
-                                        <CardTitle className="text-lg">{group.name}</CardTitle>
-                                        <CardDescription>{group.subject}</CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="flex-grow">
-                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                            <Users className="h-4 w-4" />
-                                            <span>{group.memberCount} members</span>
-                                        </div>
-                                    </CardContent>
-                                    <div className="p-4 pt-0">
-                                         <Button variant="outline" asChild className="w-full">
-                                            <Link href={`/dashboard/groups/${group.id}`}>
-                                                Go to Group <ArrowRight className="ml-2 h-4 w-4" />
-                                            </Link>
-                                        </Button>
-                                    </div>
-                                </Card>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center text-muted-foreground py-8">
-                            <p>You haven't joined any groups yet.</p>
-                            <Button asChild className="mt-4" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-                                <Link href="/dashboard/groups/create">Create a Group</Link>
-                            </Button>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+  const fetchGroupsAndRecommendations = useCallback(async () => {
+    if (user) {
+      setLoading(true);
+      setError(null);
+      try {
+        const groups = await getGroups();
+        setAllGroups(groups);
 
-            <GroupSuggestions />
+        // Only run recommendations if the user has some interests set
+        if (groups.length > 0 && user.subjects.length > 0) {
+          try {
+            const groupInfoForAI = groups.map(g => ({
+              name: g.name,
+              subject: g.subject,
+              description: g.description
+            }));
 
-        </div>
-    );
+            const recommendations = await suggestGroups({
+              subjects: user.subjects,
+              skills: user.skills,
+              availability: user.availability,
+              existingGroups: groupInfoForAI,
+            });
+
+            const recGroups = groups.filter(g =>
+              recommendations.suggestedGroups.includes(g.name)
+            );
+            setRecommendedGroups(recGroups);
+          } catch (aiError) {
+            console.error('AI Smart Matching failed:', aiError);
+            setError('Could not load AI recommendations. Displaying some available groups.');
+            // Fallback: show the first 3 groups if AI fails
+            setRecommendedGroups(groups.slice(0, 3));
+          }
+        } else {
+          setRecommendedGroups([]);
+        }
+      } catch (e) {
+        console.error('Failed to fetch groups', e);
+        setError('Could not load groups. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      // Check if user has completed onboarding
+      if (user.subjects.length === 0 && user.skills.length === 0) {
+        setShowOnboarding(true);
+      }
+      fetchGroupsAndRecommendations();
+    }
+  }, [user, fetchGroupsAndRecommendations]);
+
+  const handleGroupJoined = () => {
+    // Re-fetch groups to update membership status on cards and re-evaluate recommendations
+    if (user) {
+      fetchGroupsAndRecommendations();
+    }
+  }
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    // Re-fetch recommendations with new profile info
+    fetchGroupsAndRecommendations();
+  }
+
+  if (authLoading || (!user && !authLoading)) {
+    return <div>Loading dashboard...</div>;
+  }
+  
+  return (
+    <div className="flex flex-col gap-8">
+      {user && <OnboardingModal user={user} isOpen={showOnboarding} onSave={handleOnboardingComplete} />}
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight font-headline">Welcome back, {user?.name.split(' ')[0]}!</h1>
+        <p className="text-muted-foreground">Here's what's happening in your study world.</p>
+      </div>
+      {error && <p className="text-destructive">{error}</p>}
+      <DashboardClient
+        recommendedGroups={recommendedGroups}
+        allGroups={allGroups}
+        loading={loading}
+        onGroupJoined={handleGroupJoined}
+        user={user}
+      />
+    </div>
+  );
 }

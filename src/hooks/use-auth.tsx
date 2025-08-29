@@ -1,53 +1,89 @@
-"use client";
+'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth, db } from '@/lib/firebase';
-import type { UserProfile } from '@/lib/types';
+import { 
+  onAuthStateChanged, 
+  signOut,
+  GoogleAuthProvider,
+  signInWithPopup,
+  User as FirebaseUser
+} from 'firebase/auth';
+import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
+import type { User } from '@/lib/types';
 
-type AuthContextType = {
-  user: UserProfile | null;
+interface AuthContextType {
+  user: User | null;
   loading: boolean;
-};
+  logout: () => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
+}
 
-const AuthContext = createContext<AuthContextType>({ user: null, loading: true });
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<UserProfile | null>(null);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
+    const authUnsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-        const userRef = doc(db, 'users', firebaseUser.uid);
-        const unsubDoc = onSnapshot(userRef, (doc) => {
-          if (doc.exists()) {
-            setUser({
-              uid: firebaseUser.uid,
-              ...doc.data(),
-            } as UserProfile);
-          } else {
-            // This case might happen if the user document hasn't been created yet
-            setUser(null);
-          }
-          setLoading(false);
+        const userDocRef = doc(db, 'users', firebaseUser.uid);
+        const userUnsubscribe = onSnapshot(userDocRef, (userDoc) => {
+            if (userDoc.exists()) {
+                setUser({ id: userDoc.id, ...userDoc.data() } as User);
+            }
+            setLoading(false);
         });
-        return () => unsubDoc();
+        return () => userUnsubscribe();
       } else {
         setUser(null);
         setLoading(false);
       }
     });
 
-    return () => unsubscribe();
+    return () => authUnsubscribe();
   }, []);
+  
+  const loginWithGoogle = async () => {
+    setLoading(true);
+    const provider = new GoogleAuthProvider();
+    try {
+      const userCredential = await signInWithPopup(auth, provider);
+      const firebaseUser = userCredential.user;
+      
+      const userDocRef = doc(db, 'users', firebaseUser.uid);
+      const userDoc = await getDoc(userDocRef);
 
-  return (
-    <AuthContext.Provider value={{ user, loading }}>
-      {loading ? <div className="w-full h-screen flex items-center justify-center"><p>Loading StudyVerse...</p></div> : children}
-    </AuthContext.Provider>
-  );
+      if (!userDoc.exists()) {
+        const newUser: Omit<User, 'id'> = {
+          name: firebaseUser.displayName || 'New User',
+          email: firebaseUser.email!,
+          avatarUrl: firebaseUser.photoURL || `https://i.pravatar.cc/150?u=${firebaseUser.uid}`,
+          subjects: [],
+          skills: [],
+          availability: 'any',
+        };
+        await setDoc(userDocRef, newUser);
+      }
+    } finally {
+        // onAuthStateChanged will handle setting loading to false
+    }
+  };
+
+  const logout = () => {
+    return signOut(auth);
+  };
+
+  const value = {
+    user,
+    loading,
+    logout,
+    loginWithGoogle,
+  };
+
+  // Render children only when loading is false. This prevents rendering protected routes before auth state is resolved.
+  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

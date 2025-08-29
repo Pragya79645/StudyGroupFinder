@@ -1,5 +1,7 @@
 import type {Config} from 'tailwindcss';
 
+const { fontFamily } = require("tailwindcss/defaultTheme")
+
 export default {
   darkMode: ['class'],
   content: [
@@ -10,9 +12,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['PT Sans', 'sans-serif'],
-        headline: ['PT Sans', 'sans-serif'],
-        code: ['monospace'],
+        body: ['var(--font-body)', ...fontFamily.sans],
+        headline: ['var(--font-headline)', ...fontFamily.sans],
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -70,6 +71,11 @@ export default {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+      },
+      boxShadow: {
+        'neo-sm': '2px 2px 0px hsl(var(--border))',
+        'neo-md': '4px 4px 0px hsl(var(--border))',
+        'neo-lg': '8px 8px 0px hsl(var(--border))',
       },
       keyframes: {
         'accordion-down': {

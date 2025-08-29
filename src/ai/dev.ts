@@ -1,5 +1,6 @@
 import { config } from 'dotenv';
 config();
 
-import '@/ai/flows/suggest-group-matches.ts';
-import '@/ai/flows/generate-study-suggestions.ts';
+import '@/ai/flows/ai-study-suggestions.ts';
+import '@/ai/flows/ai-smart-matching.ts';
+import '@/ai/flows/ai-chat-summarizer.ts';

@@ -1,117 +1,150 @@
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, MessageSquare, Users, BrainCircuit } from 'lucide-react';
+import { Logo } from '@/components/logo';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Logo } from '@/components/Logo';
+import { ArrowRight, Users, MessageSquare, BrainCircuit } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-export default function Home() {
+export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="px-4 lg:px-6 h-16 flex items-center border-b">
-        <Logo />
+    <div className="flex flex-col min-h-screen bg-background">
+      <header className="px-4 lg:px-6 h-16 flex items-center border-b-2">
+        <Link href="/" className="flex items-center justify-center">
+          <Logo />
+        </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Button asChild style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-            <Link href="/login">Get Started with Google</Link>
+          <Button asChild variant="ghost">
+            <Link href="/login">Login</Link>
+          </Button>
+          <Button asChild>
+            <Link href="/login">Get Started</Link>
           </Button>
         </nav>
       </header>
+
       <main className="flex-1">
-        <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-card">
+        {/* Hero Section */}
+        <section className="w-full py-20 md:py-32 lg:py-40 border-b-2">
           <div className="container px-4 md:px-6">
-            <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
-              <div className="flex flex-col justify-center space-y-4">
-                <div className="space-y-2">
-                  <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline">
-                    Unlock Your Learning Potential with{' '}
-                    <span style={{ color: 'hsl(var(--accent))' }}>StudyVerse</span>
-                  </h1>
-                  <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    Find the perfect study group, collaborate seamlessly, and get AI-powered assistance to ace your exams.
-                  </p>
-                </div>
-                <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Button size="lg" asChild style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-                    <Link href="/login">Get Started with Google</Link>
-                  </Button>
-                  <Button size="lg" variant="outline" asChild>
-                    <Link href="#features">Learn More</Link>
-                  </Button>
-                </div>
+            <div className="max-w-3xl mx-auto text-center space-y-4">
+              <h1 className="text-4xl font-extrabold tracking-tighter sm:text-5xl md:text-6xl font-headline">
+                Stop Studying Alone. Start Winning Together.
+              </h1>
+              <p className="max-w-[700px] mx-auto text-muted-foreground md:text-xl">
+                StudyLink uses AI to connect you with the perfect study partners for your courses. Create, collaborate, and conquer your exams.
+              </p>
+              <div className="flex flex-col gap-4 min-[400px]:flex-row justify-center">
+                <Button asChild size="lg">
+                  <Link href="/login">
+                    Find Your Group <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
               </div>
-              <Image
-                src="https://picsum.photos/600/600"
-                width="600"
-                height="600"
-                alt="Hero"
-                data-ai-hint="happy students collaborating"
-                className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last lg:aspect-square"
-              />
             </div>
           </div>
         </section>
-        <section id="features" className="w-full py-12 md:py-24 lg:py-32">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center">
-              <div className="space-y-2">
-                <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">Key Features</div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">
-                  Everything You Need to Succeed
-                </h2>
-                <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  StudyVerse combines smart technology with a collaborative environment to help you achieve your academic goals.
-                </p>
-              </div>
+
+        {/* Features Section */}
+        <section className="w-full py-20 md:py-32 bg-secondary/50 border-b-2">
+            <div className="container px-4 md:px-6">
+                 <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
+                    <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Why StudyLink?</h2>
+                    <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
+                      We're more than just group finding. We provide tools to make your study sessions actually productive.
+                    </p>
+                </div>
+
+                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                    <FeatureCard
+                        icon={<BrainCircuit className="h-10 w-10 text-primary" />}
+                        title="AI-Powered Smart Matching"
+                        description="Our AI analyzes your subjects, skills, and availability to suggest the most compatible study groups."
+                    />
+                     <FeatureCard
+                        icon={<MessageSquare className="h-10 w-10 text-primary" />}
+                        title="Integrated Group Chat"
+                        description="No more juggling apps. Chat, share files, and schedule meetings right within your group space."
+                    />
+                     <FeatureCard
+                        icon={<Users className="h-10 w-10 text-primary" />}
+                        title="Create & Join Easily"
+                        description="Start a new group in seconds or join an existing one. Your next study session is just a click away."
+                    />
+                </div>
             </div>
-            <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:grid-cols-3 lg:max-w-none mt-12">
-              <Card>
-                <CardHeader className="flex flex-row items-center gap-4">
-                  <div className="rounded-full bg-accent/10 p-3 flex items-center justify-center">
-                    <Users className="h-6 w-6" style={{ color: 'hsl(var(--accent))' }}/>
-                  </div>
-                  <CardTitle className="font-headline">Smart Group Matching</CardTitle>
-                </CardHeader>
-                <CardContent className="text-muted-foreground">
-                  Our AI analyzes your profile—subjects, skills, and availability—to suggest the most compatible study groups.
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center gap-4">
-                  <div className="rounded-full bg-accent/10 p-3 flex items-center justify-center">
-                    <MessageSquare className="h-6 w-6" style={{ color: 'hsl(var(--accent))' }} />
-                  </div>
-                  <CardTitle className="font-headline">Collaborative Groups</CardTitle>
-                </CardHeader>
-                <CardContent className="text-muted-foreground">
-                  Join or create groups with real-time chat, shared resources, and seamless communication.
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center gap-4">
-                  <div className="rounded-full bg-accent/10 p-3 flex items-center justify-center">
-                     <BrainCircuit className="h-6 w-6" style={{ color: 'hsl(var(--accent))' }} />
-                  </div>
-                  <CardTitle className="font-headline">AI Study Assistant</CardTitle>
-                </CardHeader>
-                <CardContent className="text-muted-foreground">
-                  Get instant study tips, practice problems, and resource suggestions from our integrated AI assistant.
-                </CardContent>
-              </Card>
+        </section>
+
+        {/* Image Grid Section */}
+        <section className="w-full py-20 md:py-32">
+            <div className="container px-4 md:px-6">
+                <div className="grid lg:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Collaborate Like Never Before</h2>
+                        <p className="mt-4 text-lg text-muted-foreground">From late-night cram sessions to weekly reviews, StudyLink provides the platform for success. Share knowledge, solve problems, and achieve your academic goals together.</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <Image
+                            src="https://picsum.photos/400/300?1"
+                            width="400"
+                            height="300"
+                            alt="Students studying"
+                            data-ai-hint="students collaborating"
+                            className="rounded-lg object-cover w-full aspect-[4/3] border-2 shadow-neo-md"
+                           />
+                        <Image
+                            src="https://picsum.photos/400/300?2"
+                            width="400"
+                            height="300"
+                            alt="Close up on notes"
+                            data-ai-hint="notes textbook"
+                            className="rounded-lg object-cover w-full aspect-[4/3] border-2 shadow-neo-md"
+                           />
+                         <Image
+                            src="https://picsum.photos/400/300?3"
+                            width="400"
+                            height="300"
+                            alt="Student on laptop"
+                            data-ai-hint="student laptop"
+                            className="rounded-lg object-cover w-full aspect-[4/3] border-2 shadow-neo-md"
+                           />
+                         <Image
+                            src="https://picsum.photos/400/300?4"
+                            width="400"
+                            height="300"
+                            alt="Group discussion"
+                            data-ai-hint="group discussion"
+                            className="rounded-lg object-cover w-full aspect-[4/3] border-2 shadow-neo-md"
+                           />
+                    </div>
+                </div>
             </div>
-          </div>
         </section>
       </main>
-      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
-        <p className="text-xs text-muted-foreground">&copy; 2024 StudyVerse. All rights reserved.</p>
-        <nav className="sm:ml-auto flex gap-4 sm:gap-6">
-          <Link href="#" className="text-xs hover:underline underline-offset-4" prefetch={false}>
-            Terms of Service
-          </Link>
-          <Link href="#" className="text-xs hover:underline underline-offset-4" prefetch={false}>
-            Privacy
-          </Link>
-        </nav>
+
+      <footer className="py-8 w-full shrink-0 border-t-2">
+          <div className="container px-4 md:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-muted-foreground">&copy; 2024 StudyLink. All rights reserved.</p>
+            <nav className="flex gap-4 sm:gap-6">
+              <Link href="#" className="text-sm hover:underline underline-offset-4">Terms</Link>
+              <Link href="#" className="text-sm hover:underline underline-offset-4">Privacy</Link>
+            </nav>
+          </div>
       </footer>
     </div>
   );
+}
+
+
+function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
+    return (
+        <Card>
+            <CardHeader className="items-center text-center">
+                {icon}
+                <CardTitle className="mt-4">{title}</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+                <p className="text-muted-foreground">{description}</p>
+            </CardContent>
+        </Card>
+    )
 }
