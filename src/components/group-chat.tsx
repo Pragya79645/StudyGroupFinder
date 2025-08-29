@@ -8,8 +8,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Send, Sparkles, Files } from 'lucide-react';
-import { aiStudySuggestions } from '@/ai/flows/ai-study-suggestions';
-import { summarizeChat } from '@/ai/flows/ai-chat-summarizer';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from './ui/card';
 import { useAuth } from '@/hooks/use-auth';
@@ -57,15 +55,36 @@ export function GroupChat({ group, members }: GroupChatProps) {
   const handleGetAiSuggestion = async () => {
     setIsAiLoading(true);
     try {
-      const result = await aiStudySuggestions({ studyTopic: group.subject });
+      const response = await fetch('/api/genkit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'aiStudySuggestions',
+          data: { studyTopic: group.subject }
+        }),
+      });
+      
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to get AI suggestions');
+      }
+      
       // The message is sent to Firestore and will be displayed via the onSnapshot listener.
-      await sendMessage(group.id, 'ai-assistant', `**Suggestion:** ${result.suggestions}`, true);
+      await sendMessage(group.id, 'ai-assistant', `**💡 Study Suggestion:**\n\n${result.result.suggestions}`, true);
+      
+      toast({
+        title: 'AI Suggestion Generated',
+        description: 'Study suggestions have been added to the chat.',
+      });
     } catch (error) {
       console.error('AI suggestion failed:', error);
       toast({
         variant: 'destructive',
         title: 'AI Assistant Error',
-        description: 'Could not fetch study suggestions at this time.',
+        description: error instanceof Error ? error.message : 'Could not fetch study suggestions at this time.',
       });
     } finally {
       setIsAiLoading(false);
@@ -80,23 +99,70 @@ export function GroupChat({ group, members }: GroupChatProps) {
       });
       return;
     }
+    
     setIsSummarizing(true);
+    
     try {
+      // Filter out AI messages and format the chat history
       const chatHistory = messages
-        .filter(m => !m.isAIMessage) // Don't include AI messages in summary
+        .filter(m => !m.isAIMessage && m.text.trim().length > 0) // Don't include AI messages and empty messages
+        .slice(-50) // Only take the last 50 messages to avoid token limits
         .map(m => {
             const userName = usersById[m.userId]?.name || 'Former Member';
-            return `${userName}: ${m.text}`
+            const messageTime = m.timestamp instanceof Timestamp
+              ? m.timestamp.toDate()
+              : new Date(m.timestamp);
+            return `[${format(messageTime, 'MMM dd, HH:mm')}] ${userName}: ${m.text}`;
         });
 
-      const result = await summarizeChat({ history: chatHistory });
-      await sendMessage(group.id, 'ai-assistant', `**Summary:**\n${result.summary}`, true);
+      if (chatHistory.length === 0) {
+        toast({
+          title: 'No messages to summarize',
+          description: 'There are no user messages in this chat to summarize.',
+        });
+        return;
+      }
+
+      console.log('Sending chat history for summarization:', chatHistory);
+      
+      const response = await fetch('/api/genkit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'summarizeChat',
+          data: { history: chatHistory }
+        }),
+      });
+      
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to generate summary');
+      }
+      
+      console.log('Received summary:', result.result);
+      
+      // Send the summary as an AI message
+      await sendMessage(
+        group.id, 
+        'ai-assistant', 
+        `**📝 Chat Summary**\n\n${result.result.summary}\n\n*Summary generated from the last ${chatHistory.length} messages*`, 
+        true
+      );
+      
+      toast({
+        title: 'Chat Summary Generated',
+        description: `Successfully summarized ${chatHistory.length} messages.`,
+      });
+      
     } catch (error) {
       console.error('AI summarization failed:', error);
       toast({
         variant: 'destructive',
-        title: 'AI Assistant Error',
-        description: 'Could not summarize the chat at this time.',
+        title: 'Summarization Failed',
+        description: error instanceof Error ? error.message : 'Could not summarize the chat at this time.',
       });
     } finally {
       setIsSummarizing(false);

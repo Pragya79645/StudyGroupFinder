@@ -35,18 +35,24 @@ const prompt = ai.definePrompt({
   name: 'summarizeChatPrompt',
   input: {schema: SummarizeChatInputSchema},
   output: {schema: SummarizeChatOutputSchema},
-  prompt: `You are an AI assistant in a study group chat. Your task is to summarize the conversation provided.
-  
-  Focus on identifying the main topics discussed, any questions that were asked, and any decisions or action items that were agreed upon.
-  
-  Keep the summary brief and to the point.
-  
-  Chat History:
-  {{#each history}}
-  - {{this}}
-  {{/each}}
-  
-  Generate a summary of the conversation.`,
+  prompt: `You are an AI assistant helping students in a study group chat. Your task is to create a comprehensive yet concise summary of the conversation provided.
+
+Please analyze the chat history and provide a summary that includes:
+
+1. **Main Topics Discussed**: Key subjects or themes that were the focus of the conversation
+2. **Questions Asked**: Important questions raised by group members that may need follow-up
+3. **Decisions Made**: Any agreements, plans, or action items that were decided upon
+4. **Study-Related Insights**: Important concepts, resources, or learning points shared
+5. **Next Steps**: Any mentioned deadlines, upcoming meetings, or tasks to be completed
+
+Keep the summary clear, organized, and under 200 words. Focus on actionable information that would be valuable for study group members to reference later.
+
+Chat History:
+{{#each history}}
+- {{this}}
+{{/each}}
+
+Generate a well-structured summary of the conversation above.`,
 });
 
 const summarizeChatFlow = ai.defineFlow(
@@ -56,7 +62,25 @@ const summarizeChatFlow = ai.defineFlow(
     outputSchema: SummarizeChatOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    try {
+      console.log('Summarizing chat with', input.history.length, 'messages');
+      
+      if (input.history.length === 0) {
+        throw new Error('No chat history provided for summarization');
+      }
+      
+      const {output} = await prompt(input);
+      
+      if (!output || !output.summary) {
+        throw new Error('AI model did not return a valid summary');
+      }
+      
+      console.log('Successfully generated summary:', output.summary.substring(0, 100) + '...');
+      
+      return output;
+    } catch (error) {
+      console.error('Error in summarizeChatFlow:', error);
+      throw error;
+    }
   }
 );
