@@ -254,8 +254,8 @@ export function GroupChat({ group, members }: GroupChatProps) {
 
 
   return (
-    <div className="flex-1 flex flex-col">
-      <div ref={scrollAreaRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+    <div className="flex-1 flex flex-col neo-border-thick neo-bg-cyan">
+      <div ref={scrollAreaRef} className="flex-1 overflow-y-auto p-6 space-y-6 bg-white">
         {messages.map((message) => {
           const user = usersById[message.userId];
           const isCurrentUser = message.userId === currentUser.id;
@@ -268,15 +268,15 @@ export function GroupChat({ group, members }: GroupChatProps) {
 
           if (isAI) {
             return (
-              <Card key={message.id} className="bg-secondary/50 border-primary/50">
-                <CardContent className="p-4">
-                   <div className="flex items-center gap-2 mb-2">
-                     <Sparkles className="h-5 w-5 text-primary" />
-                     <h3 className="font-semibold text-primary">AI Assistant</h3>
+              <Card key={message.id} className="neo-bg-magenta border-8 border-black">
+                <CardContent className="p-6">
+                   <div className="flex items-center gap-3 mb-3">
+                     <Sparkles className="h-6 w-6 text-white" />
+                     <h3 className="font-black text-xl text-white uppercase tracking-wide">AI ASSISTANT</h3>
                    </div>
                    <MarkdownRenderer 
                      content={message.text} 
-                     className="text-sm"
+                     className="text-sm font-bold text-white"
                    />
                 </CardContent>
               </Card>
@@ -287,8 +287,8 @@ export function GroupChat({ group, members }: GroupChatProps) {
              // Render a message for a user who is no longer in the group
              if (message.userId !== 'ai-assistant') {
                 return (
-                  <div key={message.id} className="text-xs text-muted-foreground text-center italic py-2">
-                    A message from a former member.
+                  <div key={message.id} className="text-sm text-black text-center font-black py-4 neo-bg-muted neo-border">
+                    ⚠️ MESSAGE FROM FORMER MEMBER ⚠️
                   </div>
                 )
              }
@@ -300,43 +300,43 @@ export function GroupChat({ group, members }: GroupChatProps) {
             <div
               key={message.id}
               className={cn(
-                'flex items-end gap-2',
+                'flex items-end gap-4',
                 isCurrentUser ? 'justify-end' : 'justify-start'
               )}
             >
               {!isCurrentUser && (
-                <Avatar className="h-8 w-8">
+                <Avatar className="h-12 w-12 neo-border">
                   <AvatarImage src={user.avatarUrl} />
-                  <AvatarFallback>{user.name.slice(0, 2)}</AvatarFallback>
+                  <AvatarFallback className="font-black text-lg neo-bg-accent">{user.name.slice(0, 2)}</AvatarFallback>
                 </Avatar>
               )}
               <div className={cn(
-                  "max-w-xs md:max-w-md p-3 rounded-lg",
-                  isCurrentUser ? 'bg-primary text-primary-foreground' : 'bg-secondary'
+                  "max-w-xs md:max-w-md p-4 neo-border neo-shadow font-bold",
+                  isCurrentUser ? 'neo-bg-primary text-white' : 'neo-bg-secondary text-white'
               )}>
-                {!isCurrentUser && <p className="text-xs font-semibold mb-1">{user.name}</p>}
-                <p className="text-sm">{message.text}</p>
-                <p className={cn("text-xs mt-1", isCurrentUser ? "text-primary-foreground/70" : "text-muted-foreground")}>
+                {!isCurrentUser && <p className="text-sm font-black mb-2 uppercase tracking-wide">{user.name}</p>}
+                <p className="text-base font-bold">{message.text}</p>
+                <p className={cn("text-xs mt-2 font-bold uppercase", isCurrentUser ? "text-white/80" : "text-white/80")}>
                   {format(messageTimestamp, 'p')}
                 </p>
               </div>
                {isCurrentUser && (
-                <Avatar className="h-8 w-8">
+                <Avatar className="h-12 w-12 neo-border">
                   <AvatarImage src={user.avatarUrl} />
-                  <AvatarFallback>{user.name.slice(0, 2)}</AvatarFallback>
+                  <AvatarFallback className="font-black text-lg neo-bg-accent">{user.name.slice(0, 2)}</AvatarFallback>
                 </Avatar>
               )}
             </div>
           );
         })}
       </div>
-      <div className="p-4 border-t">
+      <div className="p-6 neo-border-thick neo-bg-muted">
         <form onSubmit={handleSendMessage} className="relative">
           <Textarea
             value={newMessage}
             onChange={e => setNewMessage(e.target.value)}
-            placeholder="Type your message..."
-            className="pr-36 min-h-[50px]"
+            placeholder="TYPE YOUR MESSAGE..."
+            className="pr-44 min-h-[80px] font-black text-lg"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -344,24 +344,29 @@ export function GroupChat({ group, members }: GroupChatProps) {
               }
             }}
           />
-          <div className="absolute top-1/2 right-3 -translate-y-1/2 flex gap-1">
+          <div className="absolute top-4 right-4 flex gap-2">
              <Button 
                type="button" 
-               size="icon" 
-               variant={autoSuggestionsEnabled ? "default" : "ghost"} 
+               size="sm" 
+               variant={autoSuggestionsEnabled ? "accent" : "outline"} 
                onClick={() => setAutoSuggestionsEnabled(!autoSuggestionsEnabled)} 
-               title={`Auto AI Suggestions: ${autoSuggestionsEnabled ? 'ON' : 'OFF'}`}
+               title={`AUTO AI SUGGESTIONS: ${autoSuggestionsEnabled ? 'ON' : 'OFF'}`}
+               className="text-xs"
              >
                 <Bot className="h-4 w-4" />
+                AUTO
              </Button>
-             <Button type="button" size="icon" variant="ghost" onClick={handleSummarizeChat} disabled={isSummarizing} title="Summarize Chat">
-                <Files className={cn("h-5 w-5", isSummarizing && "animate-spin")} />
+             <Button type="button" size="sm" variant="cyan" onClick={handleSummarizeChat} disabled={isSummarizing} title="SUMMARIZE CHAT" className="text-xs">
+                <Files className={cn("h-4 w-4", isSummarizing && "animate-spin")} />
+                SUMMARY
              </Button>
-             <Button type="button" size="icon" variant="ghost" onClick={handleGetAiSuggestion} disabled={isAiLoading} title="Get AI Study Suggestion">
-                <Sparkles className={cn("h-5 w-5", isAiLoading && "animate-spin")} />
+             <Button type="button" size="sm" variant="magenta" onClick={handleGetAiSuggestion} disabled={isAiLoading} title="GET AI STUDY SUGGESTION" className="text-xs">
+                <Sparkles className={cn("h-4 w-4", isAiLoading && "animate-spin")} />
+                SUGGEST
              </Button>
-            <Button type="submit" size="icon" title="Send Message">
-              <Send className="h-5 w-5" />
+            <Button type="submit" size="sm" variant="default" title="SEND MESSAGE" className="text-xs">
+              <Send className="h-4 w-4" />
+              SEND
             </Button>
           </div>
         </form>

@@ -4,48 +4,54 @@
 
 @layer base {
   :root {
-    --background: 48 100% 98%;
-    --foreground: 240 10% 4%;
-    --card: 48 100% 98%;
-    --card-foreground: 240 10% 4%;
-    --popover: 48 100% 98%;
-    --popover-foreground: 240 10% 4%;
-    --primary: 340 90% 55%;
-    --primary-foreground: 340 90% 98%;
-    --secondary: 220 15% 90%;
-    --secondary-foreground: 240 10% 4%;
-    --muted: 220 15% 93%;
-    --muted-foreground: 240 10% 45%;
-    --accent: 45 100% 50%;
-    --accent-foreground: 240 10% 4%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 10% 4%;
-    --input: 240 10% 4%;
-    --ring: 340 90% 55%;
-    --radius: 0.5rem;
+    /* Neobrutalist Color Scheme */
+    --background: 0 0% 100%; /* Pure white */
+    --foreground: 0 0% 0%; /* Pure black */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 14 100% 57%; /* Bright orange #FF4500 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 280 100% 70%; /* Electric purple #B347FF */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 60 100% 50%; /* Bright yellow #FFFF00 */
+    --muted-foreground: 0 0% 0%;
+    --accent: 120 100% 50%; /* Lime green #00FF00 */
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 100% 50%; /* Bright red #FF0000 */
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 0%; /* Black borders */
+    --input: 0 0% 100%;
+    --ring: 14 100% 57%;
+    --radius: 0rem; /* No rounded corners */
+    
+    /* Additional neobrutalist colors */
+    --neo-cyan: 180 100% 50%; /* #00FFFF */
+    --neo-magenta: 300 100% 50%; /* #FF00FF */
+    --neo-blue: 240 100% 50%; /* #0000FF */
   }
  
   .dark {
-    --background: 240 10% 10%;
-    --foreground: 48 100% 98%;
-    --card: 240 10% 10%;
-    --card-foreground: 48 100% 98%;
-    --popover: 240 10% 10%;
-    --popover-foreground: 48 100% 98%;
-    --primary: 340 90% 55%;
-    --primary-foreground: 340 90% 98%;
-    --secondary: 240 10% 15%;
-    --secondary-foreground: 48 100% 98%;
-    --muted: 240 10% 20%;
-    --muted-foreground: 48 100% 90%;
-    --accent: 45 100% 50%;
-    --accent-foreground: 240 10% 4%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 48 100% 98%;
-    --input: 48 100% 98%;
-    --ring: 340 90% 55%;
+    --background: 0 0% 0%; /* Pure black */
+    --foreground: 0 0% 100%; /* Pure white */
+    --card: 0 0% 0%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 0%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 14 100% 57%; /* Keep orange */
+    --primary-foreground: 0 0% 0%;
+    --secondary: 280 100% 70%; /* Keep purple */
+    --secondary-foreground: 0 0% 0%;
+    --muted: 60 100% 50%; /* Keep yellow */
+    --muted-foreground: 0 0% 0%;
+    --accent: 120 100% 50%; /* Keep lime */
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 0%;
+    --border: 0 0% 100%; /* White borders in dark mode */
+    --input: 0 0% 0%;
+    --ring: 14 100% 57%;
   }
 }
  
@@ -54,6 +60,67 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-bold;
+    font-family: 'Arial Black', 'Helvetica', sans-serif;
+  }
+}
+
+/* Neobrutalist utility classes */
+@layer utilities {
+  .neo-shadow {
+    box-shadow: 6px 6px 0px 0px black;
+  }
+  
+  .neo-shadow-lg {
+    box-shadow: 10px 10px 0px 0px black;
+  }
+  
+  .neo-shadow-hover {
+    transition: all 0.1s ease;
+  }
+  
+  .neo-shadow-hover:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 8px 8px 0px 0px black;
+  }
+  
+  .neo-border {
+    border: 4px solid black;
+  }
+  
+  .neo-border-thick {
+    border: 6px solid black;
+  }
+  
+  .neo-text-shadow {
+    text-shadow: 3px 3px 0px black;
+  }
+  
+  .neo-bg-primary {
+    background-color: hsl(var(--primary));
+  }
+  
+  .neo-bg-secondary {
+    background-color: hsl(var(--secondary));
+  }
+  
+  .neo-bg-accent {
+    background-color: hsl(var(--accent));
+  }
+  
+  .neo-bg-muted {
+    background-color: hsl(var(--muted));
+  }
+  
+  .neo-bg-cyan {
+    background-color: hsl(var(--neo-cyan));
+  }
+  
+  .neo-bg-magenta {
+    background-color: hsl(var(--neo-magenta));
+  }
+  
+  .neo-bg-blue {
+    background-color: hsl(var(--neo-blue));
   }
 }

@@ -3,22 +3,10 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { AuthProvider } from '@/hooks/use-auth';
-import { Inter, Space_Grotesk } from 'next/font/google';
-
-const fontBody = Inter({
-  subsets: ['latin'],
-  variable: '--font-body',
-});
-
-const fontHeadline = Space_Grotesk({
-  subsets: ['latin'],
-  variable: '--font-headline',
-});
-
 
 export const metadata: Metadata = {
-  title: 'StudyLink',
-  description: 'Connect, Collaborate, Conquer. Find your study group with AI.',
+  title: 'STUDYLINK',
+  description: 'CONNECT. COLLABORATE. CONQUER. FIND YOUR STUDY GROUP WITH AI.',
 };
 
 export default function RootLayout({
@@ -28,14 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full">
-      <body
-        className={cn(
-          'h-full font-body antialiased',
-          fontBody.variable,
-          fontHeadline.variable,
-          'bg-background text-foreground'
-        )}
-      >
+      <body className="h-full bg-white text-black font-black">
         <AuthProvider>
           {children}
         </AuthProvider>
