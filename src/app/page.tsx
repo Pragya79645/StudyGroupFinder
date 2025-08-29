@@ -11,11 +11,8 @@ export default function Home() {
       <header className="px-4 lg:px-6 h-16 flex items-center border-b">
         <Logo />
         <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Button variant="ghost" asChild>
-            <Link href="/login">Login</Link>
-          </Button>
           <Button asChild style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-            <Link href="/signup">Sign Up</Link>
+            <Link href="/login">Get Started with Google</Link>
           </Button>
         </nav>
       </header>
@@ -35,7 +32,7 @@ export default function Home() {
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
                   <Button size="lg" asChild style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-                    <Link href="/signup">Get Started</Link>
+                    <Link href="/login">Get Started with Google</Link>
                   </Button>
                   <Button size="lg" variant="outline" asChild>
                     <Link href="#features">Learn More</Link>

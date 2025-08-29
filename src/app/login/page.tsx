@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { LoginForm } from '@/components/auth/LoginForm';
+import GoogleAuth from '@/components/auth/GoogleAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/Logo';
 
@@ -16,7 +16,17 @@ export default function LoginPage() {
                     Enter your email below to login to your account
                 </p>
             </div>
-          <LoginForm />
+          import GoogleAuth from '@/components/auth/GoogleAuth';
+
+export default function LoginPage() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="max-w-md w-full mx-auto p-6 bg-white rounded-lg shadow-lg">
+        <GoogleAuth />
+      </div>
+    </div>
+  );
+}
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{' '}
             <Link href="/signup" className="underline" style={{ color: 'hsl(var(--accent))' }}>
