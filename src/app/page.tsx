@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Logo } from '@/components/logo';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Users, MessageSquare, BrainCircuit, Mail, Github, Twitter, Linkedin, MapPin, Phone } from 'lucide-react';
@@ -10,7 +10,7 @@ export default function LandingPage() {
     <div className="flex flex-col min-h-screen bg-white">
       <header className="px-6 lg:px-8 h-20 flex items-center neo-border-thick neo-bg-primary">
         <Link href="/" className="flex items-center justify-center">
-          <Logo />
+         
         </Link>
         <nav className="ml-auto flex gap-4">
           <Button asChild variant="outline" size="lg">

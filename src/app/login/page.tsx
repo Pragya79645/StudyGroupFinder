@@ -1,5 +1,5 @@
 import { LoginForm } from '@/components/auth/login-form';
-import { Logo } from '@/components/logo';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 
@@ -8,7 +8,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-secondary">
        <div className="absolute top-4 left-4">
         <Link href="/">
-          <Logo />
+  
         </Link>
       </div>
       <Card className="w-full max-w-sm">
