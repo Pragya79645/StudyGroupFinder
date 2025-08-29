@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Send, Sparkles, Files } from 'lucide-react';
+import { Send, Sparkles, Files, Bot } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from './ui/card';
+import { MarkdownRenderer } from './ui/markdown-renderer';
 import { useAuth } from '@/hooks/use-auth';
 import { sendMessage, getGroupMessages } from '@/lib/firebase-service';
 import { Timestamp } from 'firebase/firestore';
@@ -24,11 +25,40 @@ export function GroupChat({ group, members }: GroupChatProps) {
   const [newMessage, setNewMessage] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
+  const [autoSuggestionsEnabled, setAutoSuggestionsEnabled] = useState(true);
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const { user: currentUser } = useAuth();
   const usersById = Object.fromEntries(members.map(user => [user.id, user]));
+
+  const checkForAutoSuggestions = (newMessages: Message[]) => {
+    if (isAiLoading || isSummarizing) return;
+    
+    const recentMessages = newMessages
+      .filter(m => !m.isAIMessage)
+      .slice(-5) // Check last 5 user messages
+      .map(m => m.text.toLowerCase());
+    
+    // Keywords that might indicate students need help
+    const helpKeywords = [
+      'confused', 'don\'t understand', 'help', 'stuck', 'difficult', 'hard',
+      'question', '?', 'how do', 'what is', 'explain', 'clarify', 'lost'
+    ];
+    
+    const hasHelpRequest = recentMessages.some(message => 
+      helpKeywords.some(keyword => message.includes(keyword))
+    );
+    
+    if (hasHelpRequest) {
+      // Wait a bit before auto-suggesting to avoid spam
+      setTimeout(() => {
+        if (!isAiLoading) {
+          handleGetAiSuggestion();
+        }
+      }, 10000); // 10 seconds delay
+    }
+  };
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -38,10 +68,17 @@ export function GroupChat({ group, members }: GroupChatProps) {
 
   useEffect(() => {
     if (group.id) {
-      const unsubscribe = getGroupMessages(group.id, setMessages);
+      const unsubscribe = getGroupMessages(group.id, (newMessages) => {
+        setMessages(newMessages);
+        
+        // Check if we should auto-trigger suggestions
+        if (autoSuggestionsEnabled && newMessages.length > 0) {
+          checkForAutoSuggestions(newMessages);
+        }
+      });
       return () => unsubscribe();
     }
-  }, [group.id]);
+  }, [group.id, autoSuggestionsEnabled]);
 
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -55,6 +92,18 @@ export function GroupChat({ group, members }: GroupChatProps) {
   const handleGetAiSuggestion = async () => {
     setIsAiLoading(true);
     try {
+      // Get recent chat history for context (last 15 messages, excluding AI messages)
+      const recentChatHistory = messages
+        .filter(m => !m.isAIMessage && m.text.trim().length > 0)
+        .slice(-15) // Last 15 messages for context
+        .map(m => {
+          const userName = usersById[m.userId]?.name || 'Former Member';
+          const messageTime = m.timestamp instanceof Timestamp
+            ? m.timestamp.toDate()
+            : new Date(m.timestamp);
+          return `[${format(messageTime, 'HH:mm')}] ${userName}: ${m.text}`;
+        });
+
       const response = await fetch('/api/genkit', {
         method: 'POST',
         headers: {
@@ -62,7 +111,10 @@ export function GroupChat({ group, members }: GroupChatProps) {
         },
         body: JSON.stringify({
           action: 'aiStudySuggestions',
-          data: { studyTopic: group.subject }
+          data: { 
+            studyTopic: group.subject,
+            chatHistory: recentChatHistory.length > 0 ? recentChatHistory : undefined
+          }
         }),
       });
       
@@ -72,12 +124,40 @@ export function GroupChat({ group, members }: GroupChatProps) {
         throw new Error(result.error || 'Failed to get AI suggestions');
       }
       
+      // Format the message based on resource type
+      const resourceTypeEmoji: Record<string, string> = {
+        practice_problems: '📝',
+        concept_review: '📚',
+        external_resources: '🔗',
+        qa_help: '❓',
+        study_plan: '📋'
+      };
+      
+      const emoji = resourceTypeEmoji[result.result.resourceType] || '💡';
+      
+      // Build the message with clickable links
+      let messageText = recentChatHistory.length > 0 
+        ? `**${emoji} Contextual Study Suggestion:**\n\n${result.result.suggestions}`
+        : `**${emoji} Study Suggestion:**\n\n${result.result.suggestions}`;
+      
+      // Add clickable links if provided
+      if (result.result.links && result.result.links.length > 0) {
+        messageText += '\n\n**📚 Helpful Resources:**\n';
+        result.result.links.forEach((link: any, index: number) => {
+          messageText += `${index + 1}. [${link.title}](${link.url})\n   *${link.description}*\n\n`;
+        });
+      }
+      
+      messageText += recentChatHistory.length > 0 
+        ? '\n*Based on your recent discussion*'
+        : '';
+      
       // The message is sent to Firestore and will be displayed via the onSnapshot listener.
-      await sendMessage(group.id, 'ai-assistant', `**💡 Study Suggestion:**\n\n${result.result.suggestions}`, true);
+      await sendMessage(group.id, 'ai-assistant', messageText, true);
       
       toast({
         title: 'AI Suggestion Generated',
-        description: 'Study suggestions have been added to the chat.',
+        description: `${recentChatHistory.length > 0 ? 'Context-aware' : 'General'} study suggestions have been added to the chat.`,
       });
     } catch (error) {
       console.error('AI suggestion failed:', error);
@@ -194,7 +274,10 @@ export function GroupChat({ group, members }: GroupChatProps) {
                      <Sparkles className="h-5 w-5 text-primary" />
                      <h3 className="font-semibold text-primary">AI Assistant</h3>
                    </div>
-                   <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+                   <MarkdownRenderer 
+                     content={message.text} 
+                     className="text-sm"
+                   />
                 </CardContent>
               </Card>
             )
@@ -262,6 +345,15 @@ export function GroupChat({ group, members }: GroupChatProps) {
             }}
           />
           <div className="absolute top-1/2 right-3 -translate-y-1/2 flex gap-1">
+             <Button 
+               type="button" 
+               size="icon" 
+               variant={autoSuggestionsEnabled ? "default" : "ghost"} 
+               onClick={() => setAutoSuggestionsEnabled(!autoSuggestionsEnabled)} 
+               title={`Auto AI Suggestions: ${autoSuggestionsEnabled ? 'ON' : 'OFF'}`}
+             >
+                <Bot className="h-4 w-4" />
+             </Button>
              <Button type="button" size="icon" variant="ghost" onClick={handleSummarizeChat} disabled={isSummarizing} title="Summarize Chat">
                 <Files className={cn("h-5 w-5", isSummarizing && "animate-spin")} />
              </Button>
