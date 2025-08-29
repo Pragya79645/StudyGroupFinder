@@ -384,7 +384,7 @@ export default function LandingPage() {
               {/* Brand Section */}
               <div className="space-y-4">
                 <div className="flex items-center gap-3 mb-4">
-                  <Logo />
+               
                 </div>
                 <div className="neo-border neo-shadow bg-black p-4">
                   <p className="text-white font-black uppercase text-base">
