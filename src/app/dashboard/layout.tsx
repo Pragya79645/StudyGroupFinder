@@ -1,5 +1,5 @@
 'use client';
-import { Logo } from '@/components/logo';
+
 import {
   Sidebar,
   SidebarContent,
@@ -64,7 +64,7 @@ export default function DashboardLayout({
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader>
-          <Logo />
+       
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
@@ -123,7 +123,7 @@ export default function DashboardLayout({
         <header className="flex h-14 items-center gap-4 border-b bg-background/50 backdrop-blur-sm px-6 md:hidden">
           <SidebarTrigger />
           <div className="flex-1">
-            <h1 className="text-lg font-semibold"><Logo /></h1>
+         
           </div>
         </header>
         <main className="flex-1 p-4 sm:p-6">{children}</main>
